@@ -1,7 +1,8 @@
 module;
 #include "pch.h"
 export module Pong;
-import Pong;
+import Bat;
+import Ball;
 import std;
 using namespace sf;
 
@@ -34,6 +35,8 @@ int main()
 
 	// Create a bat at the bottom center of the screen
 	Bat bat{ window.getSize().x / 2.f, window.getSize().y - 20.f };
+
+	Ball ball{ window.getSize().x / 2.f, 30 };
 
 	// A cool retro-style font
 	Font font{ "assets/fonts/DS-DIGIT.TTF" };
@@ -77,7 +80,6 @@ int main()
 		if (Keyboard::isKeyPressed(Keyboard::Key::Left))
 		{
 			bat.moveLeft();
-			log("Keyboard::Key::Left");
 		}else
 		{
 			bat.stopLeft();
@@ -86,7 +88,6 @@ int main()
 		if (Keyboard::isKeyPressed(Keyboard::Key::Right))
 		{
 			bat.moveRight();
-			log("Keyboard::Key::Right");
 		}
 		else
 		{
@@ -100,9 +101,63 @@ int main()
 		
 		Time dt = clock.restart();
 		bat.update(dt);
+		ball.update(dt);
 
 		// Update the HUD text
 		hud.setString(std::format("Score: {}    Lives: {}", score, lives));
+
+		// Handle ball hitting the bottom
+		if (ball.getPosition().position.y > window.getSize().y)
+		{
+			// reverse the ball direction
+			ball.reboundBottom();
+			// Remove a life
+			lives--;
+			// Check for zero lives
+			if (lives < 1) {
+				// reset the score
+				score = 0;
+				// reset the lives
+				lives = 3;
+			}
+			log("reboundBottom");
+		}
+
+		// Handle ball hitting top
+		if (ball.getPosition().position.y < 0)
+		{
+			ball.reboundBatOrTop();
+			// Add a point to the players score
+			score++;
+			log("reboundBatOrTop");
+		}
+
+		// Handle ball hitting sides
+		if (ball.getPosition().position.x < 0 ||
+			ball.getPosition().position.x + ball.getPosition().size.x > window.getSize().x)
+		{
+			ball.reboundSides();
+			log("reboundSides");
+		}
+
+		// Has the ball hit the bat?
+		const auto& r = 
+			ball.getPosition().findIntersection(bat.getPosition());
+
+		auto r1 = bat.getPosition();
+		auto r2 = ball.getPosition();
+
+		//auto r = r1.findIntersection(r2);
+
+		if (r.has_value())
+		{			
+			// Hit detected so reverse the ball and score a point
+			ball.reboundBatOrTop();
+			log("Ball hits Bat; reboundBatOrTop");
+			/*std::println("x={}; y={}; w={}; h={}", 
+				r->position.x, r->position.y,
+				r->size.x, r->size.y);*/
+		}
 
 
 		/*
@@ -114,6 +169,7 @@ int main()
 		window.clear();
 		window.draw(hud);
 		window.draw(bat.getShape());
+		window.draw(ball.getShape());
 		window.display();
 
 

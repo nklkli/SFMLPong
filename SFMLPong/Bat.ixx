@@ -1,6 +1,6 @@
 module;
 #include "pch.h"
-export module Pong;
+export module Bat;
 using namespace sf;
 
 export
@@ -14,7 +14,7 @@ class Bat
 	bool m_MovingLeft = false;
 public:
 	Bat(float startX, float startY);
-	FloatRect getPosition() const;
+	const FloatRect& getPosition() const;
 	RectangleShape& getShape();
 	void moveLeft();
 	void moveRight();
@@ -29,11 +29,11 @@ public:
 // when we create an object
 Bat::Bat(float startX, float startY) : m_Position(startX, startY)
 {
-	m_Shape.setSize(sf::Vector2f(50, 5));
+	m_Shape.setSize({ 50, 5 });
 	m_Shape.setPosition(m_Position);
 }
 
-FloatRect Bat::getPosition() const
+const FloatRect& Bat::getPosition() const
 {
 	return m_Shape.getGlobalBounds();
 }
